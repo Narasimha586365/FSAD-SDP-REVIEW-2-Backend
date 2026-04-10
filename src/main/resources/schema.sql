@@ -1,0 +1,112 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(100) NOT NULL,
+  role ENUM('ADMIN','CO_ADMIN','STUDENT') DEFAULT 'STUDENT',
+  roll_number VARCHAR(50) UNIQUE,
+  department VARCHAR(100),
+  cohort VARCHAR(50),
+  phone VARCHAR(20)
+);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS roll_number VARCHAR(50) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS cohort VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+
+CREATE TABLE IF NOT EXISTS activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  duration VARCHAR(50),
+  skills TEXT,
+  start_date DATE,
+  end_date DATE,
+  slots INT DEFAULT 0
+);
+ALTER TABLE activities ADD COLUMN IF NOT EXISTS slots INT DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS achievements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  activity_category VARCHAR(50),
+  description TEXT,
+  date DATE,
+  certificate VARCHAR(255),
+  CONSTRAINT fk_achievement_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+ALTER TABLE achievements ADD COLUMN IF NOT EXISTS activity_category VARCHAR(50);
+ALTER TABLE achievements ADD COLUMN IF NOT EXISTS description TEXT;
+
+CREATE TABLE IF NOT EXISTS enrollments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  activity_id INT NOT NULL,
+  status VARCHAR(20) DEFAULT 'ENROLLED',
+  enrolled_date DATE DEFAULT (CURRENT_DATE()),
+  CONSTRAINT fk_enrollment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_enrollment_activity FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE,
+  CONSTRAINT uk_enrollment UNIQUE (user_id, activity_id)
+);
+ALTER TABLE enrollments MODIFY enrolled_date DATE DEFAULT (CURRENT_DATE());
+
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS domains (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  category_id INT NOT NULL,
+  CONSTRAINT fk_domain_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS modules (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  domain_id INT NOT NULL,
+  content TEXT,
+  CONSTRAINT fk_module_domain FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
+);
+ALTER TABLE modules ADD COLUMN IF NOT EXISTS name VARCHAR(200);
+ALTER TABLE modules ADD COLUMN IF NOT EXISTS content TEXT;
+
+CREATE TABLE IF NOT EXISTS tests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  module_id INT NOT NULL,
+  question TEXT NOT NULL,
+  option_a VARCHAR(255) NOT NULL,
+  option_b VARCHAR(255) NOT NULL,
+  option_c VARCHAR(255) NOT NULL,
+  option_d VARCHAR(255) NOT NULL,
+  correct_answer VARCHAR(20) NOT NULL,
+  CONSTRAINT fk_test_module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+);
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS option_a VARCHAR(255) DEFAULT '';
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS option_b VARCHAR(255) DEFAULT '';
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS option_c VARCHAR(255) DEFAULT '';
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS option_d VARCHAR(255) DEFAULT '';
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS correct_answer VARCHAR(20) DEFAULT 'optionA';
+
+CREATE TABLE IF NOT EXISTS student_progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  module_id INT NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  score INT DEFAULT 0,
+  CONSTRAINT fk_progress_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_progress_module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS certificates (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  module_id INT NOT NULL,
+  issued_date DATE,
+  CONSTRAINT fk_certificate_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_certificate_module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+);
