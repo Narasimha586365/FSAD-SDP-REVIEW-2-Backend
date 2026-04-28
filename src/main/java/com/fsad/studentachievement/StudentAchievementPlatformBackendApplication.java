@@ -12,6 +12,12 @@ public class StudentAchievementPlatformBackendApplication {
             System.setProperty("spring.datasource.username", "avnadmin");
             System.setProperty("spring.datasource.password", new String(java.util.Base64.getDecoder().decode("QVZOU19FbUVMTGpkQ1V3aUdpM1E2ay1y")));
         }
+        if (System.getenv("DEFAULT_ADMIN_PASSWORD") == null) {
+            System.setProperty("DEFAULT_ADMIN_PASSWORD", "Admin@123");
+            System.setProperty("DEFAULT_STUDENT_PASSWORD", "Student@123");
+            System.setProperty("default.admin.password", "Admin@123");
+            System.setProperty("default.student.password", "Student@123");
+        }
         SpringApplication.run(StudentAchievementPlatformBackendApplication.class, args);
     }
 }
