@@ -41,6 +41,11 @@ public class PlatformController {
 
     private final PlatformService platformService;
 
+    @GetMapping("/")
+    public ResponseEntity<String> home() {
+        return ResponseEntity.ok("Student Achievement Platform API is running successfully!");
+    }
+
     @PostMapping({"/login", "/auth/login"})
     public Map<String, Object> login(@Valid @RequestBody AuthRequest request) {
         return platformService.login(request);
